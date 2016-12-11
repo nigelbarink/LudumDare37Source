@@ -20,11 +20,13 @@ public class Objectives : MonoBehaviour {
 
 	public int lamps_repaired;
 	public int targets_shot ;
-
 	public int activemission = -1; 
+
+	public Timer clock;
+
 	int lastindex = 0;
 	bool hasscroll = false;
-
+	int buttons_pushed = 0;
 	Player_Controller player;
 	Action  click ;
 
@@ -76,7 +78,7 @@ public class Objectives : MonoBehaviour {
 
 
 		} else {
-			
+			clock.lesser_time (UnityEngine.Random.Range(10 , 60));
 		}
 			
 	}
@@ -100,6 +102,10 @@ public class Objectives : MonoBehaviour {
 		if (activemission == 0) {
 			ghostwalls.SetActive (true);
 		}
+		if (activemission == 10) {
+			clock.add_timer ();
+		}
+
 		//Debug.Log (room.transform.rotation.eulerAngles );
 		if (room.transform.rotation == Quaternion.Euler(new Vector3 (0, 90.00001f, 0)) && activemission == 0) {
 			setObjectiveDone ();
@@ -116,15 +122,22 @@ public class Objectives : MonoBehaviour {
 			break_lock();
 			targets_shot = 0;
 		}
+
+		if (buttons_pushed == 4 ){
+			setObjectiveDone ();
+			break_lock ();
+			buttons_pushed = 0;
+		}
+
 		if (locks.Count == 0 ) {
 		// the player wins and can finally leave the room !
 			door.SetActive (false);
 		}
 	}
 
-	public void turnRoom(){
+	public void turnRoom(Vector3 rotate){
 		Vector3 rot = room.transform.rotation.eulerAngles;
-		rot += new Vector3 (0,10,0);
+		rot += rotate;
 		room.transform.rotation =  Quaternion.Euler(rot);
 		Debug.Log ((room.transform.rotation == Quaternion.Euler(new Vector3 (0,270,0))).ToString());
 	} 
@@ -146,10 +159,13 @@ public class Objectives : MonoBehaviour {
 			break;
 		case(0):
 			if (other.name == "knob") {
-				Panel.GetComponent<Text> ().text = "<color=green>[E]</color>Turn room";
+				Panel.GetComponent<Text> ().text = "<color=green>[E] or [Q]</color>Turn room";
 				Panel.SetActive (true);
 				if (Input.GetKeyDown (KeyCode.E)) {
-					turnRoom ();
+					turnRoom (new Vector3(0,10,0));
+				}
+				if (Input.GetKeyDown (KeyCode.Q)) {
+					turnRoom (new Vector3(0,-5,0));
 				}
 			}
 			break;
@@ -225,6 +241,26 @@ public class Objectives : MonoBehaviour {
 				}
 			}
 			break;
+			/// 8 and 9 get handled by the player as they have to shooot something up!
+		case(11):
+			if (other.name.Contains("pushme") ) {
+				Panel.GetComponent<Text> ().text = "<color=green>[E]</color>Push button " + other.name;
+				Panel.SetActive (true);
+				if (Input.GetKeyDown(KeyCode.E)) {
+					other.gameObject.SetActive (false);
+					buttons_pushed++;
+				}
+			}
+			break;
+		case(13):
+			// activate zombies 
+			Zombie[] zombies = GameObject.Find("zombie horde").GetComponentsInChildren<Zombie>();
+			foreach (Zombie z in zombies ){
+				z.Activate();
+			}
+				
+			break;
+
 		default :
 			// the current mission doesn't excist so just don't do anything 
 			//actually do et me know for now !

@@ -41,7 +41,7 @@ public class Player_Controller : MonoBehaviour {
 		transform.rotation = Quaternion.Euler (transform.rotation.eulerAngles +rot);
 		speed = transform.rotation * new Vector3 (Input.GetAxis("Horizontal")* pwr, 0, Input.GetAxis("Vertical")* pwr );
 
-		cc.SimpleMove (speed * Time.deltaTime);
+		cc.SimpleMove (speed );
 	}
 
 
@@ -67,6 +67,19 @@ public class Player_Controller : MonoBehaviour {
 			if (shot.collider.tag == "target" && mission.get_activemission() == 8) {
 				target t = shot.collider.GetComponent<target> ();
 				doDamage (t);
+			}if (shot.collider.tag == "lock" && mission.get_activemission() == 9) {
+				//TODO: play animation whith sparks  
+				mission.break_lock ();
+				mission.setObjectiveDone ();
+
+			}
+			if (shot.collider.tag == "BIGLAMP" && mission.get_activemission () == 12) {
+				//TODO: play animation 
+				mission.break_lock ();
+				mission.setObjectiveDone ();
+
+			} else {
+				return;
 			}
 		}
 
@@ -85,6 +98,7 @@ public class Player_Controller : MonoBehaviour {
 					hit.collider.gameObject.SetActive (false);
 					paused = true;
 					mission.getScroll ();
+					mission.clock.TimerStart ();
 				}
 			}else {
 
