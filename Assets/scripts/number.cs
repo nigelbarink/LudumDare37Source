@@ -6,17 +6,14 @@ public class number : MonoBehaviour {
 	public float max_volt;
 	public Text  Display ;
 	public int voltage = 0;
-	Objectives missions;
-	public void Start(){
-		missions = GameObject.Find ("Game_manager").GetComponent<Objectives> ();
-	}
+
 	public void change(){
 		voltage++;
 		voltage =(int) Mathf.Clamp (voltage, 0, max_volt);
 	}
 	void Update () {
 		if (voltage == max_volt) {
-			missions.lamps_repaired += 1;
+			data.instance.IncreaseLampsRepaired();
 			Display.text = "Lamp Repaired ";
 			GetComponentInChildren<Light> ().intensity = 4f;
 			this.enabled = false;

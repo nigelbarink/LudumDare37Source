@@ -7,6 +7,15 @@ public class Player_Controller : MonoBehaviour {
 	public float pwr = 5f;
 	public float sens = 1.2f;
 	public float Vert_sens = 1.2f;
+
+	//FX
+	public ParticleSystem scroll_particle;
+	public AudioSource Scrollpick;
+
+	public ParticleSystem Bigexplosion1;
+	public ParticleSystem lockExplosion;
+
+
 	int Mode;
 	public enum ControlMode { normal, shooting }
 	bool paused = false;
@@ -24,14 +33,17 @@ public class Player_Controller : MonoBehaviour {
 	public void Update () {
 		if (paused == false) {
 			Cursor.visible = false;
+
 		}
 		else {
 			Cursor.visible = true;
+
 		}
 		check_movement ();
 		check_crosshair ();
 		if (Input.GetKey(KeyCode.LeftControl)){
 			Cursor.visible = true;
+
 		}
 
 }
@@ -64,19 +76,17 @@ public class Player_Controller : MonoBehaviour {
 			RaycastHit shot;
 			Debug.Log ("Pang pang...");
 			Physics.Raycast (ray, out shot, 50f);
-			if (shot.collider.tag == "target" && mission.get_activemission() == 8) {
+			if (shot.collider.tag == "target" && data.instance.GetActiveMissionIndex() == 8) {
 				target t = shot.collider.GetComponent<target> ();
 				doDamage (t);
-			}if (shot.collider.tag == "lock" && mission.get_activemission() == 9) {
-				//TODO: play animation whith sparks  
-				mission.break_lock ();
-				mission.setObjectiveDone ();
+			}if (shot.collider.tag == "lock" && data.instance.GetActiveMissionIndex() == 9) {
+				lockExplosion.Play();
+				mission.NextMission();
 
 			}
-			if (shot.collider.tag == "BIGLAMP" && mission.get_activemission () == 12) {
-				//TODO: play animation 
-				mission.break_lock ();
-				mission.setObjectiveDone ();
+			if (shot.collider.tag == "BIGLAMP" && data.instance.GetActiveMissionIndex() == 12) {
+				Bigexplosion1.Play();
+				mission.NextMission();
 
 			} else {
 				return;
@@ -94,9 +104,11 @@ public class Player_Controller : MonoBehaviour {
 				mission.Panel.SetActive (true);
 
 				if (Input.GetKey (KeyCode.E)) {
-					// Get a new mission from the mission controller
-					hit.collider.gameObject.SetActive (false);
+					scroll_particle.Play();
+
 					paused = true;
+
+					hit.collider.gameObject.SetActive (false);
 					mission.getScroll ();
 					mission.clock.TimerStart ();
 				}
@@ -104,7 +116,7 @@ public class Player_Controller : MonoBehaviour {
 
 				mission.OnUserInteract (hit.collider);
 			}
-		} else if (hit.collider.tag == "speciallock" && haskey && mission.get_activemission() == 6) {
+		} else if (hit.collider.tag == "speciallock" && haskey && data.instance.GetActiveMissionIndex() == 6) {
 					mission.Panel.GetComponent<Text> ().text = "<color=green>[E]</color>use the key  " + hit.collider.name;
 					mission.Panel.SetActive (true);
 					if (Input.GetKeyDown (KeyCode.E)) {

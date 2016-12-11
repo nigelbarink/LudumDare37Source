@@ -10,6 +10,7 @@ public class Objectives : MonoBehaviour {
 	public GameObject door;
 	public GameObject room;
 	public GameObject ghostwalls;
+	public Text message;
 
 	public List<GameObject> locks;
 	public List<GameObject> broken_locks;
@@ -18,15 +19,10 @@ public class Objectives : MonoBehaviour {
 	public Text missionCounter;
 	public Text[] missions;
 
-	public int lamps_repaired;
-	public int targets_shot ;
-	public int activemission = -1; 
+	public Animation Open_crate;
 
 	public Timer clock;
 
-	int lastindex = 0;
-	bool hasscroll = false;
-	int buttons_pushed = 0;
 	Player_Controller player;
 	Action  click ;
 
@@ -52,30 +48,21 @@ public class Objectives : MonoBehaviour {
 			}
 		}
 	}
-	public int get_activemission(){
-		return activemission;
-	}
 
 	public void getScroll (){
-		hasscroll = true;
-		objectivesScreen.SetActive (hasscroll);
-		activemission++;
-
+		data.instance.PickedUpScroll ();
+		objectivesScreen.SetActive (data.instance.HasScroll());
+		data.instance.IncreaseMissionIndex ();
+		Debug.Log (data.instance.GetActiveMissionIndex().ToString());
 	}
 
 	public void punish (){
 		if (broken_locks.Count >= 1) {
 			GameObject randomlock = broken_locks [UnityEngine.Random.Range (0, broken_locks.Count  )];
 			randomlock.SetActive (true);
-			if (lastindex == 0) {
-				lastindex = 6; 
-			}
-			lastindex++;
-			missions [lastindex].gameObject.SetActive (true);
 			
 			broken_locks.Remove (randomlock);
 			locks.Add (randomlock);
-
 
 		} else {
 			clock.lesser_time (UnityEngine.Random.Range(10 , 60));
@@ -85,48 +72,51 @@ public class Objectives : MonoBehaviour {
 
 	public void  setObjectiveDone(){
 		//Debug.Log (missions.Length);
-		if (  missions.Length < activemission ){
-			Debug.LogError ("the mission text does not exist for teh finshed mission. Mission " + activemission.ToString() + " failed vink off!");
+		if (  missions.Length < data.instance.GetActiveMissionIndex() ){
+			Debug.LogError ("the mission text does not exist for the finshed mission. Mission " + data.instance.GetActiveMissionIndex().ToString() + " failed vink off!");
 			return;
 		}
-		missions[activemission].text += "<color=green>V</color>";
-		activemission++;
+		clock.IncreaseTime (10);
+		missions[data.instance.GetActiveMissionIndex()].text += "<color=green>V</color>";
+		data.instance.IncreaseMissionIndex();
 	}
 	public void Update (){
-		missionCounter.text = "Objectives done: <color=red>" + activemission + "/" + "14</color>";
-		if (objectivesScreen.activeSelf == true) {
-			Scroll_button.SetActive (!hasscroll);
-		} else {
-			Scroll_button.SetActive (hasscroll);
+		
+		if (data.instance == null) {
+			Debug.LogError ("the instance is null");
+			return;
 		}
-		if (activemission == 0) {
+		// check and update some info about the game status 
+		missionCounter.text = "Objectives done: <color=red>" +  data.instance.GetActiveMissionIndex().ToString() + "/" + "14</color>";
+		if (objectivesScreen.activeSelf == true) {
+			Scroll_button.SetActive (data.instance.HasScroll() == false );
+		} else {
+			Scroll_button.SetActive (data.instance.HasScroll());
+		}
+		if (data.instance.GetActiveMissionIndex() == 0) {
 			ghostwalls.SetActive (true);
 		}
-		if (activemission == 10) {
+		if (data.instance.GetActiveMissionIndex() == 10) {
 			clock.add_timer ();
 		}
 
 		//Debug.Log (room.transform.rotation.eulerAngles );
-		if (room.transform.rotation == Quaternion.Euler(new Vector3 (0, 90.00001f, 0)) && activemission == 0) {
-			setObjectiveDone ();
-			break_lock ();
+		if (room.transform.rotation == Quaternion.Euler(new Vector3 (0, 90.00001f, 0)) && data.instance.GetActiveMissionIndex() == 0) {
+			NextMission ();
 			ghostwalls.SetActive (false);
 		}
-		if (lamps_repaired == 3) {
-			setObjectiveDone ();
-			break_lock();
-			lamps_repaired = 0;
+		if (data.instance.GetLampsRepaired() == 3) {
+			NextMission ();
+			data.instance.IncreaseLampsRepaired(-3);// this will set it to null! Since we do 3 + -3 which would result in 0 
 		}
-		if (targets_shot == 4) {
-			setObjectiveDone ();
-			break_lock();
-			targets_shot = 0;
+		if (data.instance.GetTargetsDestroyed() == 4) {
+			NextMission ();
+			data.instance.IncreaseTargetsDestroyed(-4); // this will set it to null!
 		}
 
-		if (buttons_pushed == 4 ){
-			setObjectiveDone ();
-			break_lock ();
-			buttons_pushed = 0;
+		if (data.instance.GetButtonsPushed() == 4 ){
+			NextMission ();
+			data.instance.IncreaseButtonsPushed(-4); // this will set it back to null 
 		}
 
 		if (locks.Count == 0 ) {
@@ -150,11 +140,11 @@ public class Objectives : MonoBehaviour {
 		selected.SetActive (false);
 		locks.Remove (selected);
 		broken_locks.Add (selected);
-		Debug.Log ("Broken lock added !");
+		//Debug.Log ("Broken lock added !");
 	}
 
 	public void  OnUserInteract(Collider other ){
-		switch (activemission) {
+		switch (data.instance.GetActiveMissionIndex()) {
 		case(-1):
 			break;
 		case(0):
@@ -232,12 +222,12 @@ public class Objectives : MonoBehaviour {
 			break;
 		case(7):
 			if (other.name.Contains("Box") ) {
-				Panel.GetComponent<Text> ().text = "<color=green>[E]</color>Pickup " + other.name;
+				Panel.GetComponent<Text> ().text = "<color=green>[E]</color>Open " + other.name;
 				Panel.SetActive (true);
 				if (Input.GetKeyDown(KeyCode.E)) {
+					Open_crate.Play ();
 					other.gameObject.SetActive (false);
-					setObjectiveDone ();
-					break_lock ();
+					NextMission ();
 				}
 			}
 			break;
@@ -248,7 +238,7 @@ public class Objectives : MonoBehaviour {
 				Panel.SetActive (true);
 				if (Input.GetKeyDown(KeyCode.E)) {
 					other.gameObject.SetActive (false);
-					buttons_pushed++;
+					data.instance.IncreaseButtonsPushed();
 				}
 			}
 			break;
@@ -267,5 +257,11 @@ public class Objectives : MonoBehaviour {
 			Debug.Log("The mission doesn't excist in the current context !");
 			break;
 		}
-		}}
+		}
 
+public void NextMission (){
+		setObjectiveDone ();
+		break_lock();
+		message.text =  data.messages[data.instance.GetActiveMissionIndex()] != null  ? data.messages[data.instance.GetActiveMissionIndex()] : "Quickly there's only so much time!";
+}
+}

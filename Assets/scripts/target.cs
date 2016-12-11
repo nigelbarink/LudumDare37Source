@@ -5,15 +5,11 @@ public class target : MonoBehaviour {
 	public int health = 50;
 	public bool willMove = false;
 	public float range = 5; 
-	Objectives mission;
-
-	public void Start (){
-		mission = GameObject.Find ("Game_manager").GetComponent<Objectives> ();
-	}
+	 
 	public void Update (){
 		if (health <= 0) {
 			this.gameObject.SetActive (false);
-			mission.targets_shot++;
+			data.instance.IncreaseTargetsDestroyed();
 		}
 
 		if (willMove) {
