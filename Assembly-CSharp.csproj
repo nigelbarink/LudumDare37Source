@@ -54,6 +54,7 @@
      <Compile Include="Assets\scripts\data.cs" />
      <Compile Include="Assets\scripts\number.cs" />
      <Compile Include="Assets\scripts\target.cs" />
+     <None Include="Assets\fonts\OFL.txt" />
  <Reference Include="UnityEngine.UI">
  <HintPath>F:/unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>

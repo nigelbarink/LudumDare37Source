@@ -11,7 +11,8 @@ public class Player_Controller : MonoBehaviour {
 	//FX
 	public ParticleSystem scroll_particle;
 	public AudioSource Scrollpick;
-
+	public LineRenderer BulletTrace ;
+	public ParticleSystem shotFX;
 	public ParticleSystem Bigexplosion1;
 	public ParticleSystem lockExplosion;
 
@@ -73,11 +74,19 @@ public class Player_Controller : MonoBehaviour {
 
 
 		if (Input.GetMouseButtonDown(0) && Mode == (int)ControlMode.shooting ){
+			shotFX.Play ();
 			RaycastHit shot;
 			Debug.Log ("Pang pang...");
 			Physics.Raycast (ray, out shot, 50f);
+			target t = shot.collider.GetComponent<target> ();
+			if (t != null) {
+				//TODO: FIX ME  
+				Vector3[] positions = { this.transform.position, t.transform.position};
+				BulletTrace.SetPositions (positions);
+
+			}
+
 			if (shot.collider.tag == "target" && data.instance.GetActiveMissionIndex() == 8) {
-				target t = shot.collider.GetComponent<target> ();
 				doDamage (t);
 			}if (shot.collider.tag == "lock" && data.instance.GetActiveMissionIndex() == 9) {
 				lockExplosion.Play();
