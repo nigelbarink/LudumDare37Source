@@ -14,10 +14,10 @@ MonoDevelop
 
 ##controls:
 
--switch between gun and hand Q
--Interact with the world E
--move around the room WASD
--get your cursor back CTRL
+*switch between gun and hand [Q]
+*Interact with the world [E]
+*move around the room [WASD]
+*get your cursor back [CTRL]
 
 
 ##What I want to do post-mortem (on github):
