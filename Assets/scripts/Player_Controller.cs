@@ -15,6 +15,8 @@ public class Player_Controller : MonoBehaviour {
 	public ParticleSystem shotFX;
 	public ParticleSystem Bigexplosion1;
 	public ParticleSystem lockExplosion;
+	public Image gunUI;
+	public Sprite[] modes; 
 
 
 	int Mode;
@@ -70,6 +72,7 @@ public class Player_Controller : MonoBehaviour {
 
 		if(Input.GetKeyDown(KeyCode.Q)){
 			Mode = Mode == (int)ControlMode.shooting ?  (int)ControlMode.normal : (int)ControlMode.shooting;
+			gunUI.sprite = modes [Mode];
 		}
 
 

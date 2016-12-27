@@ -54,7 +54,10 @@ public class Timer : MonoBehaviour {
 		Debug.Log ("you just lost: " +  time + " seconds");
 		curr_time -= time;
 	}
-
+	public void more_time(float time){
+		Debug.Log ("you just gained: " +  time + " seconds");
+		curr_time += time;
+	}
 
 	public void add_timer(){
 		time += 20;

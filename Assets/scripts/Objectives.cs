@@ -63,6 +63,7 @@ public class Objectives : MonoBehaviour {
 			
 			broken_locks.Remove (randomlock);
 			locks.Add (randomlock);
+			clock.more_time (20);
 
 		} else {
 			clock.lesser_time (UnityEngine.Random.Range(10 , 60));
